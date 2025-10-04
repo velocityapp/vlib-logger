@@ -160,12 +160,18 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 
 	level := fmt.Sprintf("%6s", r.Level.String()+":")
 	time := r.Time.Format(timeFormat)
-
-	message := fmt.Sprintf("%s %s %s %s %s", time, string(sourceBytes), level, r.Message, messageBytes)
-
+	var message string
+	if r.Level == slog.LevelInfo || r.Level == slog.LevelWarn {
+		if len(r.Message) > 50 {
+			r.Message = r.Message[0:50] + "..."
+		}
+		message = fmt.Sprintf("%s %s %s %s", time, string(sourceBytes), level, r.Message)
+	} else {
+		message = fmt.Sprintf("%s %s %s %s %s", time, string(sourceBytes), level, r.Message, messageBytes)
+	}
 	switch r.Level {
 	case slog.LevelDebug:
-		message = colorize(lightBlue, message)
+		message = colorize(red, message)
 	case slog.LevelInfo:
 		message = colorize(cyan, message)
 	case slog.LevelWarn:
